@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Algoritmo RSA</title>
+    <script>
+        function calcularRSA() {
+            var p = parseInt(document.getElementById('p').value);
+            var q = parseInt(document.getElementById('q').value);
+
+            var n = p * q;
+            var phiN = (p - 1) * (q - 1);
+
+            var e, d;
+            for (e = 2; e < phiN; e++) {
+                if (gcd(e, phiN) == 1) {
+                    break;
+                }
+            }
+
+            d = modInverse(e, phiN);
+
+            document.getElementById('n').innerHTML = n;
+            document.getElementById('phiN').innerHTML = phiN;
+            document.getElementById('e').innerHTML = e;
+            document.getElementById('d').innerHTML = d;
+        }
+
+        function gcd(a, b) {
+            if (b === 0) {
+                return a;
+            }
+
+            return gcd(b, a % b);
+        }
+
+        function modInverse(a, m) {
+            var m0 = m;
+            var y = 0;
+            var x = 1;
+
+            if (m === 1) {
+                return 0;
+            }
+
+            while (a > 1) {
+                var q = Math.floor(a / m);
+                var t = m;
+
+                m = a % m;
+                a = t;
+                t = y;
+
+                y = x - q * y;
+                x = t;
+            }
+
+            if (x < 0) {
+                x += m0;
+            }
+
+            return x;
+        }
+
+        function cifrarMensaje() {
+            var mensaje = document.getElementById('mensaje').value;
+            var e = parseInt(document.getElementById('e').innerHTML);
+            var n = parseInt(document.getElementById('n').innerHTML);
+
+            var cifrado = '';
+            for (var i = 0; i < mensaje.length; i++) {
+                var charCode = mensaje.charCodeAt(i);
+                var encryptedCharCode = modPow(charCode, e, n);
+                cifrado += encryptedCharCode.toString() + ' ';
+            }
+
+            document.getElementById('mensajeCifrado').innerHTML = cifrado;
+        }
+
+        function descifrarMensaje() {
+            var mensajeCifrado = document.getElementById('mensajeCifrado').innerHTML.trim();
+            var d = parseInt(document.getElementById('d').innerHTML);
+            var n = parseInt(document.getElementById('n').innerHTML);
+
+            var descifrado = '';
+            var cifradoArray = mensajeCifrado.split(' ');
+            for (var i = 0; i < cifradoArray.length; i++) {
+                var encryptedCharCode = parseInt(cifradoArray[i]);
+                var charCode = modPow(encryptedCharCode, d, n);
+                descifrado += String.fromCharCode(charCode);
+            }
+
+            document.getElementById('mensajeDescifrado').innerHTML = descifrado;
+        }
+
+        function modPow(base, exponent, modulus) {
+            if (modulus === 1) {
+                return 0;
+            }
+
+            var result = 1;
+            base = base % modulus;
+
+            while (exponent > 0) {
+                if (exponent % 2 === 1) {
+                    result = (result * base) % modulus;
+                }
+
+                exponent = Math.floor(exponent / 2);
+                base = (base * base) % modulus;
+            }
+
+            return result;
+        }
+    </script>
+</head>
+<body>
+    <h1>Algoritmo RSA</h1>
+    <h2>Paso 1: Ingrese dos números primos de 4 dígitos</h2>
+    <input type="text" id="p" placeholder="Primo 1 (p)">
+    <input type="text" id="q" placeholder="Primo 2 (q)">
+    <button onclick="calcularRSA()">Calcular</button>
+
+    <h2>Paso 2: Cálculos RSA</h2>
+    <p>n: <span id="n"></span></p>
+    <p>&#966;(n): <span id="phiN"></span></p>
+    <p>e: <span id="e"></span></p>
+    <p>d: <span id="d"></span></p>
+
+    <h2>Paso 3: Cifrar mensaje</h2>
+    <input type="text" id="mensaje" placeholder="Ingrese el mensaje a cifrar">
+    <button onclick="cifrarMensaje()">Cifrar</button>
+    <p>Mensaje cifrado: <span id="mensajeCifrado"></span></p>
+
+    <h2>Paso 4: Descifrar mensaje</h2>
+    <button onclick="descifrarMensaje()">Descifrar</button>
+    <p>Mensaje descifrado: <span id="mensajeDescifrado"></span></p>
+</body>
+</html>
